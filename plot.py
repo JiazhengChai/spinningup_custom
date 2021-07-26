@@ -11,7 +11,7 @@ save_path=os.path.join(os.getcwd(),'plot',DIAGRAM_NAME)
 
 path_to_trained_models=[
                         os.path.join(data_path,'cptest'),
-                    os.path.join(data_path,'cptest2')
+                        os.path.join(data_path,'cptest2')
                         ]
 
 parser = argparse.ArgumentParser()
@@ -29,9 +29,8 @@ my_return_plots(path_to_trained_models, args.legend, args.xaxis, args.value, arg
            smooth=args.smooth, select=args.select, exclude=args.exclude,
            estimator=args.est,save_path=save_path)
 
-plt.show()
 
-'''if len(DIAGRAM_NAME)>0:
+if len(DIAGRAM_NAME)>0:
     plt.savefig(save_path)
 else:
-    plt.show()'''
+    plt.show()
