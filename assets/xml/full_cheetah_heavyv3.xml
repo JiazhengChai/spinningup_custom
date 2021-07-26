@@ -1,0 +1,96 @@
+<mujoco model="cheetah">
+  <compiler angle="radian" coordinate="local" inertiafromgeom="true"/>
+  <default>
+    <joint armature=".1" damping=".01" limited="true" solimplimit="0 .8 .03" solreflimit=".02 1" stiffness="8"/>
+    <geom conaffinity="0" condim="3" contype="1" friction=".4 .1 .1" rgba="0.8 0.6 .4 1" solimp="0.0 0.8 0.01" solref="0.02 1"/>
+    <motor ctrllimited="true" ctrlrange="-1 1"/>
+  </default>
+  <size nstack="300000" nuser_geom="1"/>
+  <option gravity="0 0 -9.81" timestep="0.01"/>
+  <asset>
+    <texture builtin="gradient" height="100" rgb1="1 1 1" rgb2="0 0 0" type="skybox" width="100"/>
+    <texture builtin="flat" height="1278" mark="cross" markrgb="1 1 1" name="texgeom" random="0.01" rgb1="0.8 0.6 0.4" rgb2="0.8 0.6 0.4" type="cube" width="127"/>
+    <texture builtin="checker" height="100" name="texplane" rgb1="0.8 0.8 0.8" rgb2="0.8 0.8 0.8" type="2d" width="100"/>
+    <material name="MatPlane" reflectance="0.5" shininess="0" specular="1" texrepeat="60 60" texture="texplane"/>
+    <material name="geom" texture="texgeom" texuniform="true"/>
+  </asset>
+  <worldbody>
+    <geom conaffinity="1" condim="3" material="MatPlane" name="floor" pos="0 0 0" rgba="0.8 0.9 0.8 1" size="400 400 400" type="plane" friction=".8 .1 .1" /><!--friction=".9 .1 .1"-->
+    <body name="torso" pos="0 0 .7">
+      <light cutoff="100" diffuse="1 1 1" dir="-0 0.1 -1.3" directional="true" exponent="1" pos="0 0 1.3" specular=".1 .1 .1"/>
+      <camera name="track" mode="trackcom" pos="0 -3 0.3" xyaxes="1 0 0 0 0 1"/>
+      <joint armature="0" axis="1 0 0" damping="0" limited="false" name="rootx" pos="0 0 0" stiffness="0" type="slide"/>
+      <joint armature="0" axis="0 0 1" damping="0" limited="false" name="rootz" pos="0 0 0" stiffness="0" type="slide"/>
+      <joint armature="0" axis="0 1 0" damping="0" limited="false" name="rooty" pos="0 0 0" stiffness="0" type="hinge"/>
+      <!--<geom fromto="-.5 0 0 .5 0 0" name="torso" size="0.046" type="capsule"/>-->
+      <geom name="torso" size="0.6 0.2 0.05" type="box" mass="30"/>
+      <geom axisangle="0 1 0 .87" name="head" pos=".55 0 .15" size="0.146 .15" type="sphere" mass="3"/>
+      <geom axisangle="0 1 0 -.87" name="tail" pos="-.55 0 .1" size="0.046 .05" type="capsule" mass="1"/>
+	<geom  name="earL" pos=".55 0.07 .29" size="0.025 0.025 0.03" type="box" mass="0.02"/>
+	<geom  name="earR" pos=".55 -0.07 .29" size="0.025 0.025 0.03" type="box" mass="0.02"/>
+       <!--<site name='tip'  pos='.15 0 .11'/>-->
+      <body name="bthighL" pos="-.5 0.1 0">
+        <joint axis="0 1 0" name="bthighL" pos="0 0 0" range="-.52 1.05" type="hinge" damping="6" stiffness="240" springref="0"/><!--  damping="6" stiffness="240"   -->
+        <geom axisangle="0 1 0 -3.8" name="bthighL" pos=".1 0 -.13" size="0.046 .145" type="capsule" mass="3"/>
+        <body name="bshinL" pos=".16 0 -.25">
+          <joint axis="0 1 0"  name="bshinL" pos="0 0 0" range="-.785 .785" type="hinge" damping="4.5" stiffness="180" springref="0"/><!-- damping="4.5" stiffness="180"   -->
+          <geom axisangle="0 1 0 -2.03" name="bshinL" pos="-.14 0 -.07" rgba="0.9 0.6 0.6 1" size="0.046 .15" type="capsule" mass="1"/>
+          <body name="bfootL" pos="-.28 0 -.14">
+            <joint axis="0 1 0"  name="bfootL" pos="0 0 0" range="-.4 .785"  type="hinge" damping="3" stiffness="120" springref="0"/><!--  damping="3" stiffness="120"  -->
+            <geom axisangle="0 1 0 -.27" name="bfootL" pos=".03 0 -.097" rgba="0.9 0.6 0.6 1" size="0.046 .094" type="capsule" mass="0.5"/>
+          </body>
+        </body>
+      </body>
+      <body name="fthighL" pos=".45 0.1 0">
+        <joint axis="0 1 0" name="fthighL" pos="0 0 0" range="-1 .7" type="hinge" damping="4.5" stiffness="180"  springref="0"/><!--  damping="4.5" stiffness="180"   -->
+        <geom axisangle="0 1 0 .52" name="fthighL" pos="-.07 0 -.12" size="0.046 .133" type="capsule" mass="3"/>
+        <body name="fshinL" pos="-.14 0 -.24">
+          <joint axis="0 1 0"  name="fshinL" pos="0 0 0" range="-1.2 .87"  type="hinge"  damping="3" stiffness="120"   springref="0"/><!-- damping="3" stiffness="120"  -->
+          <geom axisangle="0 1 0 -.6" name="fshinL" pos=".065 0 -.09" rgba="0.9 0.6 0.6 1" size="0.046 .106" type="capsule" mass="1"/>
+          <body name="ffootL" pos=".13 0 -.18">
+            <joint axis="0 1 0" name="ffootL" pos="0 0 0" range="-.5 .5"  type="hinge" damping="1.5"  stiffness="60"  springref="0"/><!-- damping="1.5"  stiffness="60"  -->
+            <geom axisangle="0 1 0 -.6" name="ffootL" pos=".045 0 -.07" rgba="0.9 0.6 0.6 1" size="0.046 .07" type="capsule" mass="0.5"/>
+          </body>
+        </body>
+      </body>
+      <body name="bthighR" pos="-.5 -0.1 0">
+        <joint axis="0 1 0"  name="bthighR" pos="0 0 0" range="-.52 1.05" type="hinge" damping="6" stiffness="240" springref="0"/><!-- damping="6" stiffness="240"  -->
+        <geom axisangle="0 1 0 -3.8" name="bthighR" pos=".1 0 -.13" size="0.046 .145" type="capsule" rgba="1 0 0 1"  mass="3"/>
+        <body name="bshinR" pos=".16 0 -.25">
+          <joint axis="0 1 0" name="bshinR" pos="0 0 0" range="-.785 .785"  type="hinge" damping="4.5" stiffness="180"  springref="0"/><!-- damping="4.5" stiffness="180" -->
+          <geom axisangle="0 1 0 -2.03" name="bshinR" pos="-.14 0 -.07" rgba="1 0 0 1"  size="0.046 .15" type="capsule" mass="1"/>
+          <body name="bfootR" pos="-.28 0 -.14">
+            <joint axis="0 1 0"  name="bfootR" pos="0 0 0" range="-.4 .785"  type="hinge"  damping="3" stiffness="120"  springref="0"/><!-- damping="3" stiffness="120"   -->
+            <geom axisangle="0 1 0 -.27" name="bfootR" pos=".03 0 -.097" rgba="1 0 0 1"  size="0.046 .094" type="capsule" mass="0.5"/>
+          </body>
+        </body>
+      </body>
+      <body name="fthighR" pos=".45 -0.1 0">
+        <joint axis="0 1 0"  name="fthighR" pos="0 0 0" range="-1 .7" type="hinge" damping="4.5" stiffness="180"  springref="0"/><!--damping="4.5" stiffness="180"   -->
+        <geom axisangle="0 1 0 .52" name="fthighR" pos="-.07 0 -.12" size="0.046 .133" type="capsule" rgba="1 0 0 1"  mass="3"/>
+        <body name="fshinR" pos="-.14 0 -.24">
+          <joint axis="0 1 0"  name="fshinR" pos="0 0 0" range="-1.2 .87" type="hinge"  damping="3" stiffness="120"  springref="0"/><!--damping="3" stiffness="120"  -->
+          <geom axisangle="0 1 0 -.6" name="fshinR" pos=".065 0 -.09" rgba="1 0 0 1"  size="0.046 .106" type="capsule" mass="1"/>
+          <body name="ffootR" pos=".13 0 -.18">
+            <joint axis="0 1 0"  name="ffootR" pos="0 0 0" range="-.5 .5"  type="hinge" damping="1.5" stiffness="60"  springref="0"/><!--damping="1.5" stiffness="60"  -->
+            <geom axisangle="0 1 0 -.6" name="ffootR" pos=".045 0 -.07" rgba="1 0 0 1"  size="0.046 .07" type="capsule" mass="0.5"/>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+  <actuator>
+    <motor gear="85" joint="bthighL" name="bthighL"/>
+    <motor gear="40" joint="bshinL" name="bshinL"/>
+    <motor gear="20" joint="bfootL" name="bfootL"/>
+    <motor gear="70" joint="fthighL" name="fthighL"/>
+    <motor gear="40" joint="fshinL" name="fshinL"/>
+    <motor gear="20" joint="ffootL" name="ffootL"/>
+    <motor gear="85" joint="bthighR" name="bthighR"/>
+    <motor gear="40" joint="bshinR" name="bshinR"/>
+    <motor gear="20" joint="bfootR" name="bfootR"/>
+    <motor gear="70" joint="fthighR" name="fthighR"/>
+    <motor gear="40" joint="fshinR" name="fshinR"/>
+    <motor gear="20" joint="ffootR" name="ffootR"/>
+  </actuator>
+</mujoco>

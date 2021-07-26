@@ -1,26 +1,20 @@
-#from vertical_mvt_pendulum import VerticalMvtPendulumEnv
-import os
 from spinup import sac,sac_core
 from spinup import td3,td3_core
 from spinup import ddpg,ddpg_core
 from spinup import ppo,ppo_core
 from spinup.utils.test_policy import run_policy,load_policy_and_env
-import gym
 import os
-from vertical_mvt_pendulum import VerticalMvtPendulumEnv
+from utils import return_env
 import torch
-
-#os.environ["CUDA_VISIBLE_DEVICES"]="0"
-#os.environ["CUDA_VISIBLE_DEVICES"]=""
 
 path=os.getcwd()+'/assets'
 #In command line, run the following command lines with the "Experiment name" replaced with the name of the experiment folder
 #To run experiment:
-# run testing P --algo SAC
-# run testing P --algo TD3
+# run testing FC_gallop_speed5 --algo SAC
+# run testing FC_gallop_speed5 --algo TD3
 
 #To test:
-# test testing P
+# test testing FC_gallop_speed5
 
 if __name__ == '__main__':
     import argparse
@@ -29,47 +23,40 @@ if __name__ == '__main__':
     ### Common parameters###
     parser.add_argument('run_type', type=str, choices=('run, test'))
     parser.add_argument('exp_name', type=str)
-    parser.add_argument('env_type', type=str,choices=['VMP','MC','P','L','BP','CP'])
-    parser.add_argument('--algo_type', type=str,default='model_free', choices=['model_free','model_based','PID'])
+    parser.add_argument('env_type', type=str,choices=['VMP','MC','P','L','BP','CP',
+                                                      'FC','FC_gallop','FC_trot',
+                                                      'FC_gallop_speed5','FC_trot_speed5',
+                                                      'FC_gallop_minSpring','FC_gallop_maxSpring'])
+
+    parser.add_argument('--algo_type', type=str,default='model_free', choices=['model_free','PID'])
     parser.add_argument('--batch_size', type=int,default=256)#256
 
     ### Common parameters###
 
     ### MODEL FREE parameters###
     parser.add_argument('--algo', type=str, default='sac', choices=('sac,SAC, td3,TD3,ppo,PPO,ddpg,DDPG'))
-    parser.add_argument('--hid', type=int, default=100)
+    parser.add_argument('--hid', type=int, default=256)
     parser.add_argument('--l', type=int, default=2)
     parser.add_argument('--steps', type=int, default=1000)
     parser.add_argument('--epochs', type=int, default=50)
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--seed', '-s', type=int, default=0)
-    parser.add_argument('--cpu', type=int, default=4)
+    parser.add_argument('--cpu', type=int, default=2)
     parser.add_argument('--max_ep_len', type=int, default=1000)
-    parser.add_argument('--save_freq', type=int,default=1)
+    parser.add_argument('--save_freq', type=int,default=2)
     parser.add_argument('--itr', type=int, default=-1)
 
     ### MODEL FREE parameters###
 
     args = parser.parse_args()
-
+    torch.set_num_threads(args.cpu)
 
     save_folder=os.path.join(os.getcwd(),'data',args.exp_name)
     if not os.path.exists(save_folder):
         os.makedirs(save_folder)
     logger_kwargs = dict(output_dir=save_folder, exp_name=args.exp_name)
 
-    if args.env_type=='VMP':
-        VPenv = VerticalMvtPendulumEnv(type='vertical_mvt_pendulum.xml', path=path)
-    elif args.env_type=='MC':
-        VPenv = gym.make('MountainCarContinuous-v0')
-    elif args.env_type == 'P':
-        VPenv = gym.make('Pendulum-v0')
-    elif args.env_type == 'L':
-        VPenv = gym.make('LunarLanderContinuous-v2')
-    elif args.env_type == 'BP':
-        VPenv = gym.make('BipedalWalker-v3')
-    elif args.env_type == 'CP':
-        VPenv = gym.make('CartPole-v0')
+    VPenv=return_env(args.env_type)
 
     if args.algo_type=='model_free':
         if args.run_type=='run':
