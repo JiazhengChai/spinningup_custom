@@ -10,7 +10,7 @@ dependencies:
   - conda-package-handling
   #- cudatoolkit=10.1
   #- cudnn=7.6.5=cuda10.1_0
-  - libedit=
+  - libedit
   - libffi
   - libgcc-ng
   - libstdcxx-ng
