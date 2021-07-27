@@ -41,7 +41,8 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, default=50)
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--seed', '-s', type=int, default=0)
-    parser.add_argument('--cpu', type=int, default=2)
+    parser.add_argument('--cpu', type=int, default=1)
+    parser.add_argument('--gpu_choice', type=int, default=0)
     parser.add_argument('--max_ep_len', type=int, default=1000)
     parser.add_argument('--save_freq', type=int,default=2)
     parser.add_argument('--itr', type=int, default=-1)
@@ -50,6 +51,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     torch.set_num_threads(args.cpu)
+    try:
+        torch.cuda.set_device(args.gpu_choice)
+    except:
+        print("No GPU available")
 
     save_folder=os.path.join(os.getcwd(),'data',args.exp_name)
     if not os.path.exists(save_folder):
