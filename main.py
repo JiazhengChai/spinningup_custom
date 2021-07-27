@@ -64,6 +64,7 @@ if __name__ == '__main__':
         framework="pytorch"
     else:
         import tensorflow as tf
+        tf.compat.v1.disable_eager_execution()
         os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_choice)
         gpus = tf.config.experimental.list_physical_devices('GPU')
         if gpus:
