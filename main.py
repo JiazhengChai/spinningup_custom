@@ -24,32 +24,32 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     ### Common parameters###
-    parser.add_argument('run_type', type=str, choices=('run, test'))
+    parser.add_argument('run_type', type=str, choices=('run, test'), help='Train or test')
     parser.add_argument('exp_name', type=str)
     parser.add_argument('env_type', type=str,choices=['VMP','MC','P','L','BP','CP',
                                                       'FC','FC_gallop','FC_trot',
                                                       'FC_gallop_speed5','FC_trot_speed5',
-                                                      'FC_gallop_minSpring','FC_gallop_maxSpring'])
+                                                      'FC_gallop_minSpring','FC_gallop_maxSpring'], help='Environment')
 
     parser.add_argument('--algo_type', type=str,default='model_free', choices=['model_free','PID'])
-    parser.add_argument('--batch_size', type=int,default=256)#256
+    parser.add_argument('--batch_size', type=int,default=256, help='batch size of one gradient update')#256
 
     ### Common parameters###
 
     ### MODEL FREE parameters###
     parser.add_argument('--algo', type=str, default='sac', choices=('sac,SAC, td3,TD3,ppo,PPO,ddpg,DDPG,'
-                                                                    'sac_tf2,tf3_tf2'))
-    parser.add_argument('--hid', type=int, default=256)
-    parser.add_argument('--l', type=int, default=2)
-    parser.add_argument('--steps', type=int, default=1000)
-    parser.add_argument('--epochs', type=int, default=1500)
-    parser.add_argument('--gamma', type=float, default=0.99)
-    parser.add_argument('--seed', '-s', type=int, default=0)
-    parser.add_argument('--cpu', type=int, default=1)
-    parser.add_argument('--gpu_choice', type=int, default=0)
-    parser.add_argument('--max_ep_len', type=int, default=1000)
-    parser.add_argument('--save_freq', type=int,default=100)
-    parser.add_argument('--itr', type=int, default=-1)
+                                                                    'sac_tf2,tf3_tf2'), help='Type of algorithm')
+    parser.add_argument('--hid', type=int, default=256, help='Size of each layer for policy network')
+    parser.add_argument('--l', type=int, default=2, help='Number of hidden layers for policy network')
+    parser.add_argument('--steps', type=int, default=1000, help='Number of gradient updates per epoch')
+    parser.add_argument('--epochs', type=int, default=1500, help='Number of training epochs')
+    parser.add_argument('--gamma', type=float, default=0.99, help='Gamma for Bellman Update')
+    parser.add_argument('--seed', '-s', type=int, default=0, help='Seed for experiments')
+    parser.add_argument('--cpu', type=int, default=1, help='Number of cpu to be used for PyTorch')
+    parser.add_argument('--gpu_choice', type=int, default=0, help='Which GPU to be used for TF2')
+    parser.add_argument('--max_ep_len', type=int, default=1000, help='Maximum lenght of one episode. Better to be the same as "steps"')
+    parser.add_argument('--save_freq', type=int,default=100, help='Checkpoint frequency in terms of epoch')
+    parser.add_argument('--itr', type=int, default=-1, help='Checkpoint to be visualized')
 
     ### MODEL FREE parameters###
 
