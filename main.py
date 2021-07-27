@@ -2,6 +2,9 @@ from spinup import sac,sac_core
 from spinup import td3,td3_core
 from spinup import ddpg,ddpg_core
 from spinup import ppo,ppo_core
+from spinup import sac_tf2,sac_core_tf2
+from spinup import td3_tf2,td3_core_tf2
+
 from spinup.utils.test_policy import run_policy,load_policy_and_env
 import os
 from utils import return_env
@@ -34,7 +37,8 @@ if __name__ == '__main__':
     ### Common parameters###
 
     ### MODEL FREE parameters###
-    parser.add_argument('--algo', type=str, default='sac', choices=('sac,SAC, td3,TD3,ppo,PPO,ddpg,DDPG'))
+    parser.add_argument('--algo', type=str, default='sac', choices=('sac,SAC, td3,TD3,ppo,PPO,ddpg,DDPG,'
+                                                                    'sac_tf2,tf3_tf2'))
     parser.add_argument('--hid', type=int, default=256)
     parser.add_argument('--l', type=int, default=2)
     parser.add_argument('--steps', type=int, default=1000)
@@ -50,11 +54,22 @@ if __name__ == '__main__':
     ### MODEL FREE parameters###
 
     args = parser.parse_args()
-    torch.set_num_threads(args.cpu)
-    try:
-        torch.cuda.set_device(args.gpu_choice)
-    except:
-        print("No GPU available")
+    if "tf2" not in args.algo:
+        torch.set_num_threads(args.cpu)
+        try:
+            torch.cuda.set_device(args.gpu_choice)
+        except:
+            print("No GPU available")
+
+        framework="pytorch"
+    else:
+        import tensorflow as tf
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_choice)
+        gpus = tf.config.experimental.list_physical_devices('GPU')
+        if gpus:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+        framework="tf2"
 
     save_folder=os.path.join(os.getcwd(),'data',args.exp_name)
     if not os.path.exists(save_folder):
@@ -80,6 +95,19 @@ if __name__ == '__main__':
                     batch_size=args.batch_size,save_freq=args.save_freq,
                     logger_kwargs=logger_kwargs)
 
+            elif args.algo == 'sac_tf2':
+                sac_tf2(lambda: VPenv, actor_critic=sac_core_tf2.mlp_actor_critic,
+                    ac_kwargs=dict(hidden_sizes=[args.hid] * args.l), gamma=args.gamma,
+                    seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs, max_ep_len=args.max_ep_len,
+                    batch_size=args.batch_size, save_freq=args.save_freq,
+                    logger_kwargs=logger_kwargs)
+
+            elif args.algo == 'td3_tf2':
+                td3_tf2(lambda: VPenv, actor_critic=td3_core_tf2.mlp_actor_critic,
+                    ac_kwargs=dict(hidden_sizes=[args.hid] * args.l), gamma=args.gamma,
+                    seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs, max_ep_len=args.max_ep_len,
+                    batch_size=args.batch_size, save_freq=args.save_freq,
+                    logger_kwargs=logger_kwargs)
 
             elif args.algo == 'ppo' or args.algo == 'PPO':
                 ppo(lambda: VPenv, actor_critic=ppo_core.MLPActorCritic,
@@ -99,7 +127,8 @@ if __name__ == '__main__':
             load_path=os.path.join(os.getcwd(),'data',args.exp_name)
             _, get_action = load_policy_and_env(load_path,
                                                   args.itr if args.itr >= 0 else 'last',
-                                                  True)
+                                                  deterministic=True,
+                                                backend=framework)
             run_policy(VPenv, get_action)
 
     elif args.algo_type == 'PID':

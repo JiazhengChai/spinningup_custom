@@ -4,9 +4,9 @@ import os
 import os.path as osp
 import torch
 from spinup import EpochLogger
+import tensorflow as tf
 
-
-def load_policy_and_env(fpath, itr='last', deterministic=False):
+def load_policy_and_env(fpath, itr='last', deterministic=False,backend = 'pytorch'):
     """
     Load a policy from save, whether it's TF or PyTorch, along with RL env.
 
@@ -19,28 +19,52 @@ def load_policy_and_env(fpath, itr='last', deterministic=False):
     """
 
     # determine if tf save or pytorch save
-    backend = 'pytorch'
 
-    # handle which epoch to load from
-    if itr=='last':
-        # check filenames for epoch (AKA iteration) numbers, find maximum value
+    if backend!="tf2":
+        # handle which epoch to load from
+        if itr=='last':
+            # check filenames for epoch (AKA iteration) numbers, find maximum value
 
 
-        pytsave_path = osp.join(fpath, 'pyt_save')
-        # Each file in this folder has naming convention 'modelXX.pt', where
-        # 'XX' is either an integer or empty string. Empty string case
-        # corresponds to len(x)==8, hence that case is excluded.
-        saves = [int(x.split('.')[0][5:]) for x in os.listdir(pytsave_path) if len(x)>8 and 'model' in x]
+            pytsave_path = osp.join(fpath, 'pyt_save')
+            # Each file in this folder has naming convention 'modelXX.pt', where
+            # 'XX' is either an integer or empty string. Empty string case
+            # corresponds to len(x)==8, hence that case is excluded.
+            saves = [int(x.split('.')[0][5:]) for x in os.listdir(pytsave_path) if len(x)>8 and 'model' in x]
 
-        itr = '%d'%max(saves) if len(saves) > 0 else ''
+            itr = '%d'%max(saves) if len(saves) > 0 else ''
 
+        else:
+            assert isinstance(itr, int), \
+                "Bad value provided for itr (needs to be int or 'last')."
+            itr = '%d'%itr
+
+        # load the get_action function
+        get_action = load_pytorch_policy(fpath, itr, deterministic)
     else:
-        assert isinstance(itr, int), \
-            "Bad value provided for itr (needs to be int or 'last')."
-        itr = '%d'%itr
 
-    # load the get_action function
-    get_action = load_pytorch_policy(fpath, itr, deterministic)
+        # handle which epoch to load from
+        if itr == 'last':
+            saves = [int(x[11:]) for x in os.listdir(fpath) if 'simple_save' in x and len(x) > 11]
+            itr = '%d' % max(saves) if len(saves) > 0 else ''
+        else:
+            itr = '%d' % itr
+
+        # load the things!
+        sess = tf.compat.v1.Session()
+        model = restore_tf_graph(sess, osp.join(fpath, 'simple_save' + itr))
+
+        # get the correct op for executing actions
+        if deterministic and 'mu' in model.keys():
+            # 'deterministic' is only a valid option for SAC policies
+            print('Using deterministic action op.')
+            action_op = model['mu']
+        else:
+            print('Using default action op.')
+            action_op = model['pi']
+
+        # make function for producing an action given a single state
+        get_action = lambda x: sess.run(action_op, feed_dict={model['x']: x[None, :]})[0]
 
     # try to load environment from save
     # (sometimes this will fail because the environment could not be pickled)
@@ -70,6 +94,32 @@ def load_pytorch_policy(fpath, itr, deterministic=False):
 
     return get_action
 
+def restore_tf_graph(sess, fpath):
+    """
+    Loads graphs saved by Logger.
+
+    Will output a dictionary whose keys and values are from the 'inputs'
+    and 'outputs' dict you specified with logger.setup_tf_saver().
+
+    Args:
+        sess: A Tensorflow session.
+        fpath: Filepath to save directory.
+
+    Returns:
+        A dictionary mapping from keys to tensors in the computation graph
+        loaded from ``fpath``.
+    """
+    tf.compat.v1.saved_model.loader.load(
+                sess,
+                [tf.compat.v1.saved_model.tag_constants.SERVING],
+                fpath
+            )
+    model_info = joblib.load(osp.join(fpath, 'model_info.pkl'))
+    graph = tf.compat.v1.get_default_graph()
+    model = dict()
+    model.update({k: graph.get_tensor_by_name(v) for k,v in model_info['inputs'].items()})
+    model.update({k: graph.get_tensor_by_name(v) for k,v in model_info['outputs'].items()})
+    return model
 
 def run_policy(env, get_action, max_ep_len=None, num_episodes=100, render=True):
 
