@@ -42,13 +42,13 @@ if __name__ == '__main__':
     parser.add_argument('--hid', type=int, default=256)
     parser.add_argument('--l', type=int, default=2)
     parser.add_argument('--steps', type=int, default=1000)
-    parser.add_argument('--epochs', type=int, default=50)
+    parser.add_argument('--epochs', type=int, default=1500)
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--seed', '-s', type=int, default=0)
     parser.add_argument('--cpu', type=int, default=1)
     parser.add_argument('--gpu_choice', type=int, default=0)
     parser.add_argument('--max_ep_len', type=int, default=1000)
-    parser.add_argument('--save_freq', type=int,default=2)
+    parser.add_argument('--save_freq', type=int,default=100)
     parser.add_argument('--itr', type=int, default=-1)
 
     ### MODEL FREE parameters###

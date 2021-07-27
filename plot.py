@@ -4,14 +4,14 @@ import argparse
 import matplotlib.pyplot as plt
 import pandas
 
-DIAGRAM_NAME='comparisons'
+DIAGRAM_NAME=''
 
 data_path=os.path.join(os.getcwd(),'data')
 save_path=os.path.join(os.getcwd(),'plot',DIAGRAM_NAME)
 
 path_to_trained_models=[
-                        os.path.join(data_path,'cptest'),
-                        os.path.join(data_path,'cptest2')
+                        os.path.join(data_path,'testFCtf2'),
+                        os.path.join(data_path,'testFC')
                         ]
 
 parser = argparse.ArgumentParser()
