@@ -46,7 +46,7 @@ if __name__ == '__main__':
     parser.add_argument('--gamma', type=float, default=0.99, help='Gamma for Bellman Update')
     parser.add_argument('--seed', '-s', type=int, default=0, help='Seed for experiments')
     parser.add_argument('--cpu', type=int, default=1, help='Number of cpu to be used for PyTorch')
-    parser.add_argument('--gpu_choice', type=int, default=0, help='Which GPU to be used for TF2')
+    parser.add_argument('--gpu_choice', type=int, default=0, help='Which GPU to be used')
     parser.add_argument('--max_ep_len', type=int, default=1000, help='Maximum lenght of one episode. Better to be the same as "steps"')
     parser.add_argument('--save_freq', type=int,default=100, help='Checkpoint frequency in terms of epoch')
     parser.add_argument('--itr', type=int, default=-1, help='Checkpoint to be visualized')
@@ -56,10 +56,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if "tf2" not in args.algo:
         torch.set_num_threads(args.cpu)
-        try:
-            torch.cuda.set_device(args.gpu_choice)
-        except:
-            print("No GPU available")
+        if torch.cuda.is_available() and args.gpu_choice>-1:
+            try:
+                device = torch.device("cuda:"+args.gpu_choice)
+            except:
+                device = torch.device("cuda:0")
+                print("The chosen GPU does not exist.")
+                print("Running on default GPU instead.")
+        else:
+            device = torch.device("cpu")
 
         framework="pytorch"
     else:
@@ -71,6 +76,7 @@ if __name__ == '__main__':
             for gpu in gpus:
                 tf.config.experimental.set_memory_growth(gpu, True)
         framework="tf2"
+        device=""
 
     save_folder=os.path.join(os.getcwd(),'data',args.exp_name)
     if not os.path.exists(save_folder):
@@ -87,14 +93,14 @@ if __name__ == '__main__':
                     ac_kwargs=dict(hidden_sizes=[args.hid]*args.l), gamma=args.gamma,
                     seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs,max_ep_len=args.max_ep_len,
                     batch_size=args.batch_size,save_freq=args.save_freq,
-                    logger_kwargs=logger_kwargs)
+                    logger_kwargs=logger_kwargs,device=device)
 
             elif args.algo=='td3' or args.algo=='TD3':
                 td3(lambda : VPenv, actor_critic=td3_core.MLPActorCritic,
                     ac_kwargs=dict(hidden_sizes=[args.hid]*args.l), gamma=args.gamma,
                     seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs,max_ep_len=args.max_ep_len,
                     batch_size=args.batch_size,save_freq=args.save_freq,
-                    logger_kwargs=logger_kwargs)
+                    logger_kwargs=logger_kwargs,device=device)
 
             elif args.algo == 'sac_tf2':
                 sac_tf2(lambda: VPenv, actor_critic=sac_core_tf2.mlp_actor_critic,
@@ -129,8 +135,8 @@ if __name__ == '__main__':
             _, get_action = load_policy_and_env(load_path,
                                                   args.itr if args.itr >= 0 else 'last',
                                                   deterministic=True,
-                                                backend=framework)
-            run_policy(VPenv, get_action)
+                                                backend=framework,device=device)
+            run_policy(VPenv, get_action,device=device,backend=framework)
 
     elif args.algo_type == 'PID':
         assert args.env_type=="P"

@@ -6,7 +6,7 @@ import torch
 from spinup import EpochLogger
 import tensorflow as tf
 
-def load_policy_and_env(fpath, itr='last', deterministic=False,backend = 'pytorch'):
+def load_policy_and_env(fpath, itr='last', deterministic=False,backend = 'pytorch',device="cpu"):
     """
     Load a policy from save, whether it's TF or PyTorch, along with RL env.
 
@@ -40,7 +40,7 @@ def load_policy_and_env(fpath, itr='last', deterministic=False,backend = 'pytorc
             itr = '%d'%itr
 
         # load the get_action function
-        get_action = load_pytorch_policy(fpath, itr, deterministic)
+        get_action = load_pytorch_policy(fpath, itr, deterministic,device=device)
     else:
 
         # handle which epoch to load from
@@ -77,18 +77,18 @@ def load_policy_and_env(fpath, itr='last', deterministic=False,backend = 'pytorc
     return env, get_action
 
 
-def load_pytorch_policy(fpath, itr, deterministic=False):
+def load_pytorch_policy(fpath, itr, deterministic=False,device="cpu"):
     """ Load a pytorch policy saved with Spinning Up Logger."""
     
     fname = osp.join(fpath, 'pyt_save', 'model'+itr+'.pt')
     print('\n\nLoading from %s.\n\n'%fname)
 
-    model = torch.load(fname)
+    model = torch.load(fname).to(device)
 
     # make function for producing an action given a single state
     def get_action(x):
         with torch.no_grad():
-            x = torch.as_tensor(x, dtype=torch.float32)
+            x = torch.as_tensor(x, dtype=torch.float32,device=device)
             action = model.act(x)
         return action
 
@@ -121,7 +121,7 @@ def restore_tf_graph(sess, fpath):
     model.update({k: graph.get_tensor_by_name(v) for k,v in model_info['outputs'].items()})
     return model
 
-def run_policy(env, get_action, max_ep_len=None, num_episodes=100, render=True):
+def run_policy(env, get_action, max_ep_len=None, num_episodes=100, render=True,device="cpu",backend="pytorch"):
 
     assert env is not None, \
         "Environment not found!\n\n It looks like the environment wasn't saved, " + \
