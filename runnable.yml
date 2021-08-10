@@ -2,6 +2,7 @@ name: tested_env
 channels:
   - defaults
 dependencies:
+  - pip
   - _libgcc_mutex=0.1=main
   - brotlipy=0.7.0=py36h7b6447c_1000
   - ca-certificates=2020.7.22=0
