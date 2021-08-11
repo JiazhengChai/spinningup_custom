@@ -1,4 +1,16 @@
-**Status:** Maintenance (expect bug fixes and minor updates)
+Custom features in this repository
+==================================
+- GPU support for Pytorch implementation of SAC and TD3 algorithms
+- TF2 implementation of SAC and TD3 algorithms (not completely tested)
+- Easy addition of new Mujoco environment
+
+Troubleshooting when building the conda virtual environment from runnable.yml
+====================================================================
+- If mpi4py is missing or unable to install it by pip, try:
+1)    ```sudo apt-get update -y```
+2)    ```sudo apt-get install -y python3-mpi4py```
+3)    ```pip install mpi4py```
+
 
 Welcome to Spinning Up in Deep RL! 
 ==================================
